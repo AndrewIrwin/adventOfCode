@@ -1,0 +1,3 @@
+Learned that single quotes ('#') delimit characters (one only)
+and double quotes delimit strings ("fdsfsd")
+
