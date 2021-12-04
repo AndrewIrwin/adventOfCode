@@ -30,51 +30,10 @@ gamma*epsilon
 
 # part 2
 # find the number with the most commmon (or not) bit in each position
-# move from L to R (high bit to low bit) and stop when only one remains
-# implement this with two vectors of flags and stop when only one remains
+# recompute the most common bit from each filtered subset
 # if equal numbers of 0s and 1s, interpret as 1 for oxygen, 0 for co2
 
-common = [ bitOnes[i] >= n/2 ? 1 : 0 for i in 1:length(bitOnes)]
-oxygen = ones(Int, n)
-co2 = ones(Int, n)
-
-# this logic is wrong for some reason
-
-for j in 1:length(common)
-  for i in 1:n
-    if v[i][j] == string(common[j])[1]  # most  common bit
-      if sum(co2) > 1
-        co2[i] *= 0  # get rid of co2
-      end
-    else
-      if sum(oxygen) > 1
-        oxygen[i] *= 0
-      end
-    end
-  end
-  if (sum(co2) == 1 ) & (sum(oxygen) == 1)
-    break
-  end
-end
-
-# get the entries
-v[co2 .== 1][1]
-v[oxygen .== 1][1]
-
-# and the common string
-Tuple( string.(common))
-*("0", "0", "0", "0", "1", "0", "1", "1", "0", "0", "0", "1")
- # not sure why *(Tuple(string.(common)))  # fails
-
-parse(Int, v[co2 .== 1][1], base = 2) * parse(Int, v[oxygen .== 1][1], base = 2)
-# 688864
-
-# bug? where is my confusion?
-# *remaining* numbers!
-
-# try again
-# handle ties properly, even though there are none in this dataset
-# Distinguish between < n/2, == n/2, and > n/2 1s
+# common = [ bitOnes[i] >= n/2 ? 1 : 0 for i in 1:length(bitOnes)]
 
 # write a filter function based on the task description
 # this is hideous, but it works
@@ -87,6 +46,11 @@ function filter(v, position, ties, mostCommon)  # ties is '0' or '1' (who wins o
       end
    end
    keep = '1'
+   # if count == length(v)/2
+   #   keep = ties
+   # elseif count < length(v)/2
+   #   keep = '0'
+   # end
    if count == length(v)/2
      keep = ties
    else
@@ -95,7 +59,7 @@ function filter(v, position, ties, mostCommon)  # ties is '0' or '1' (who wins o
          keep = '0'
        end
      else
-       if count < length(v)/2
+       if count > length(v)/2
          keep = '0'
        end
      end
@@ -127,4 +91,5 @@ while (length(co2)>1)
 end
 
 parse(Int, co2[1], base = 2) * parse(Int, o2[1], base = 2)
+# 3379326
 
