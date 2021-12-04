@@ -45,24 +45,12 @@ function filter(v, position, ties, mostCommon)  # ties is '0' or '1' (who wins o
         count += 1
       end
    end
+
    keep = '1'
-   # if count == length(v)/2
-   #   keep = ties
-   # elseif count < length(v)/2
-   #   keep = '0'
-   # end
    if count == length(v)/2
      keep = ties
-   else
-     if mostCommon
-       if count < length(v)/2
-         keep = '0'
-       end
-     else
-       if count > length(v)/2
-         keep = '0'
-       end
-     end
+   elseif (mostCommon & (count < length(v)/2)) | ( (!mostCommon) & (count > length(v)/2) )
+     keep = '0'
    end
 
    result = []
