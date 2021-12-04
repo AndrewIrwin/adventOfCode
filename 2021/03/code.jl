@@ -37,6 +37,9 @@ gamma*epsilon
 common = [ bitOnes[i] >= n/2 ? 1 : 0 for i in 1:length(bitOnes)]
 oxygen = ones(Int, n)
 co2 = ones(Int, n)
+
+# this logic is wrong for some reason
+
 for j in 1:length(common)
   for i in 1:n
     if v[i][j] == string(common[j])[1]  # most  common bit
@@ -67,4 +70,61 @@ parse(Int, v[co2 .== 1][1], base = 2) * parse(Int, v[oxygen .== 1][1], base = 2)
 # 688864
 
 # bug? where is my confusion?
-# 
+# *remaining* numbers!
+
+# try again
+# handle ties properly, even though there are none in this dataset
+# Distinguish between < n/2, == n/2, and > n/2 1s
+
+# write a filter function based on the task description
+# this is hideous, but it works
+
+function filter(v, position, ties, mostCommon)  # ties is '0' or '1' (who wins on a tie), mostCommon is true or false
+   count = 0
+   for i in v
+      if i[position] == '1'
+        count += 1
+      end
+   end
+   keep = '1'
+   if count == length(v)/2
+     keep = ties
+   else
+     if mostCommon
+       if count < length(v)/2
+         keep = '0'
+       end
+     else
+       if count < length(v)/2
+         keep = '0'
+       end
+     end
+   end
+
+   result = []
+   for i in 1:length(v)
+     if v[i][position] == keep
+       append!(result, [v[i]])
+     end
+   end
+   result
+end
+
+# filter(v, 1, '1', true)
+
+o2 = filter(v, 1, '1', true)
+i = 2
+while (length(o2)>1)
+  o2 = filter(o2, i, '1', true)
+  i += 1
+end
+
+co2 = filter(v, 1, '0', false)
+i = 2
+while (length(co2)>1)
+  co2 = filter(co2, i, '0', false)
+  i += 1
+end
+
+parse(Int, co2[1], base = 2) * parse(Int, o2[1], base = 2)
+
