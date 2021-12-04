@@ -1,0 +1,45 @@
+
+```julia
+using DataFrames
+```
+
+```julia
+import Base
+
+map = Base.readlines("input.txt");
+```
+
+blah blah
+
+
+```julia
+function count_trees(right, down)
+  width = length(map[1])
+  i = 1;
+  trees = 0;
+  for row in 1:down:length(map)
+    j = map[row]
+    if j == ""
+      break  # handle blank line problem
+    end
+    print(j[i] *  " - " * j * "\n")
+    if j[i] == '#'
+       trees += 1
+    end
+    i += right
+    if i > width
+      i -= width
+    end
+  end
+
+  trees
+end
+```
+
+compute something
+
+```julia
+print(count_trees(3,1))
+```
+
+Nothing happens....

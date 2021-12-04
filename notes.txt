@@ -1,0 +1,16 @@
+
+import Base
+
+r = re"([a-z]*)'
+m = match(r, "3213 fdhfjds 311")
+m[1]
+'s' # character
+"fdsfsd" # string (array of characters)
+length(array)
+
+Interactive markdown in VS Code with Julia requires a live preview package.
+https://www.julia-vscode.org/docs/stable/userguide/weave/
+
+Turning .md (.jmd?) files into html requires Weave:
+https://github.com/JunoLab/Weave.jl#usage
+
