@@ -1,0 +1,155 @@
+v = readlines("input.txt")
+# v = readlines("test.txt")
+I = length(v)
+J = length(v[1])
+x = 10 .* ones(Int, I+2, J+2)
+
+for i in 1:I
+  for j in 1:J
+    x[i+1,j+1] = parse(Int, v[i][j])
+  end
+end
+
+# Find local min (up, down, top, right neighbours are larger, when they exist)
+# pad boundaries with 10s
+
+lows = zeros(Int, I, J);
+for i in 1:I
+  for j in 1:J
+    # print(string(i) * ", " * string(j)*"\n")
+    if (x[i+1,j+1]<x[i+2,j+1]) & (x[i+1,j+1]<x[i,j+1]) & (x[i+1,j+1]<x[i+1,j+2]) & (x[i+1,j+1]<x[i+1,j]) 
+      lows[i,j] = 1
+    end
+  end
+end
+
+sum( (lows .* (1 .+ x[2:(I+1),2:(J+1)])))
+
+# find basins (9s are not in any basin)
+# get sizes of 3 largest basins
+# how is this connected to minmum problem?
+# only in a clunky way? (add one to minimum and repeat?
+
+# start in top row. Fill with candidate basin number, incrementing by 1
+# when a 9 is found
+# move to the next row, using basin numbers from previous row
+# if adjacent cells have same basin number, replace with smaller of the two
+
+basins = zeros(Int, I, J)
+xx = x[2:(I+1), 2:(J+1)]
+
+nextBasin = 1
+for i in 1:I
+  for j in 1:J
+    if xx[i,j] != 9
+      if i == 1
+        if j==1
+          basins[i,j] = nextBasin
+          nextBasin += 1
+        elseif xx[i,j-1] != 9
+          basins[i,j] = basins[i,j-1]
+        else
+          basins[i,j] = nextBasin
+          nextBasin += 1
+        end
+      else # i > 1
+        if basins[i-1, j] != 0
+          basins[i,j] = basins[i-1, j]
+        elseif j == 1
+          basins[i,j] = nextBasin
+          nextBasin += 1
+        elseif basins[i,j-1] != 0
+          basins[i,j] = basins[i,j-1]
+        else
+          basins[i,j] = nextBasin
+          nextBasin += 1
+        end
+      end 
+    end
+   end # finished a row
+   # check for merge of two basins and renumber as necessary
+   for j in 2:J 
+     # check to the left
+     if (basins[i,j-1]!=0) & (basins[i,j] != 0) & (basins[i,j-1] != basins[i,j])
+       for k in 1:(i-1)
+         for l in 1:J
+           if basins[k,l] == basins[i,j] 
+              basins[k,l] = basins[i,j-1]
+           end
+         end
+       end
+       basins[i,j] = basins[i,j-1]
+     end
+   end
+   if i>1
+     for j in 1:J 
+       # check up as well
+       if (basins[i,j]!=0) & (basins[i-1,j] != 0) & (basins[i,j] != basins[i-1,j])
+         print("i,j="*string(i)*","*string(j)*": "*string(basins[i,j])*" or "*string(basins[i-1,j])*"\n")
+         for k in 1:(i-1)
+           for l in 1:J
+             if basins[k,l] == basins[i-1,j] 
+                basins[k,l] = basins[i,j]
+             end
+           end
+         end
+         # basins[i,j] = basins[i-1,j]
+       end
+     end
+   end
+end # finish rows
+
+# that was ugly and error prone!
+
+# a couple tests. are all 9s on boundaries (basin 0). yes
+sum((xx .== 9) .* basins) == 0
+
+# are all boundaries also 9s? yes.
+sum((xx .!= 9) .* (basins .== 0) ) == 0
+
+# are any adjacent basins not the same?
+for i in 2:(I-1)
+  for j in 2:(J-1)
+    if basins[i,j] != 0
+      v = [basins[i,j], basins[i-1,j], basins[i+1,j], basins[i,j-1], basins[i,j+1]]
+      v = v[v .!= 0]  # drop 0s
+      if sum(abs.(diff(v))) != 0  # there is more than one basin in the list
+        print(string(i) *","*string(j)*"\n")
+      end
+    end
+  end
+end
+# finds lots of problems. Fusion not working right. Fix code above.
+# fix these. if x[i-1, j] != x[i,j], change all of one value to the other
+for i in 2:I
+  for j in 1:J 
+    if (basins[i,j]!=0) & (basins[i-1,j] != 0) & (basins[i,j] != basins[i-1,j])
+      print("i,j="*string(i)*","*string(j)*": "*string(basins[i,j])*" or "*string(basins[i-1,j])*"\n")
+      old = basins[i,j]
+      new = basins[i-1,j]
+      for k in 1:I
+        for l in 1:J
+          if basins[k,l] == old
+            basins[k,l] = new
+          end
+        end
+      end
+    end
+  end
+end
+
+
+# count the number of each basin number, keeping the three largest
+
+basinSize = zeros(Int, nextBasin)
+for i in 1:I
+  for j in 1:J
+    if basins[i,j] != 0
+      basinSize[basins[i,j]] += 1
+    end
+  end
+end
+          
+reverse(sort(basinSize))[1:3]
+prod(reverse(sort(basinSize))[1:3])
+
