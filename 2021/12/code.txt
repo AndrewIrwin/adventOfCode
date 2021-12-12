@@ -1,0 +1,132 @@
+v = readlines("test-1.txt");
+v = readlines("test-2.txt");
+v = readlines("test-3.txt");
+v = readlines("input.txt");
+
+# find all (the largest number of) paths (and count them) from start to end, 
+# visiting small letter caves at most
+# once and large letter caves any number of times.
+
+pairs = split.(v, '-')
+append!(pairs, deepcopy(reverse.(pairs))) # add reverse trips
+# remove entries with start in 2nd position or end in 1st position
+deleteat!(pairs, (y -> y[1] == "end").(pairs))
+deleteat!(pairs, (y -> y[2] == "start").(pairs))
+
+# helper function for part 2
+function lcSeenTwice(s)
+  ss = filter(x -> (!(x in ["start", "end"])), s)
+  sLC = filter(x -> islowercase(x[1]), ss)
+  twice = [ (sLC[i] in sLC[(i+1):end] ? 1 : 0) for i in 1:(length(sLC)-1)]
+  # twice
+  sum(twice)
+end
+
+# make a list of all possible solutions, starting with start and ending with end
+# as lists in a list
+# Loop repeatedly over candidate solutions, adding legal steps
+# some trajectories get to end, some get deadends ('d')
+# stop when no additions made to list of solutions
+
+function findTrajectories(pairs)
+  solutions = [ ["start"] ]
+  incomplete = true
+  while incomplete
+    incomplete = false # assume all have 'end' until we see evidence to the contrary
+    for s in solutions
+      first = true # for first addtion, append; otherwise add copy
+      scopy = deepcopy(s)
+      if !("end" in s)
+        for p in pairs
+          add = false
+          if p[1] == scopy[end]  # can be used to extend
+            if islowercase(p[2][1]) & ( !in(p[2], scopy) )  # lowercase and not used before
+              add = true
+            elseif isuppercase(p[2][1]) # can always go to uppercase nodes
+              add = true  
+            end
+            # if p[1] == "kj"
+            #   print(string(add)* "-"*string(p)*"-"*string(s)*"\n")
+            # end
+          end
+          if add 
+            incomplete = true
+            if first
+              append!(s, [p[2]])
+              first = false
+            else
+              append!(solutions, [append!(deepcopy(scopy), [p[2]])])
+            end
+          end
+        end  # p in pairs
+      end # ! end in s
+    end # s in solutions
+  end # incomplete trajectories remain
+  solutions
+end
+
+traj = findTrajectories(pairs)
+ 
+# count legal trajectories
+sum([ "end" in t for t in traj ])
+
+# test-1: 10
+# test-2: 19
+# test-3: 226
+# input: 10
+
+# part 2
+# allowed to visit one small letter cave twice
+
+# revised version
+
+function findTrajectories2(pairs)
+  solutions = [ ["start"] ]
+  # solutions = [ ["start", "b", "A", "c", "A"] ]
+  incomplete = true
+  while incomplete
+    incomplete = false # assume all have 'end' until we see evidence to the contrary
+    for s in solutions
+      first = true # for first addtion, append; otherwise add copy
+      scopy = deepcopy(s) # for use with appending, comparison after first append
+      if !("end" in s)
+        for p in pairs
+          add =  0 # no
+          if p[1] == scopy[end]  # can be used to extend
+            if islowercase(p[2][1]) & ( (!in(p[2], scopy)) | (lcSeenTwice(scopy) ==0)) 
+                # lowercase and not used before, or none used twice yet
+              add = 1 # yes
+            elseif isuppercase(p[2][1]) # can always go to uppercase nodes
+              add = 1 # yes
+            end
+            # print(string(add)*"-"*string(first)*"-"*string(p)*"-"*string(scopy)*"\n")
+          end
+          if add == 1
+            incomplete = true
+            if first 
+              append!(s, [p[2]])
+              first = false
+            else
+              append!(solutions, [append!(deepcopy(scopy), [p[2]])])
+            end
+          end
+        end  # p in pairs
+      end # ! end in s
+    end # s in solutions
+  end # incomplete trajectories remain
+  sort(filter( x-> "end" in x, solutions))
+end
+
+# bug: test-1 missing bAcAbA end; has bAbAcA and cAcAbA...?  an s that should have been scopy
+traj = findTrajectories2(pairs)
+
+# count legal trajectories
+sum([ "end" in t for t in traj ])
+
+# test-1: 36
+# test-2: 103
+# test-3: 3509
+# input: 99138
+
+
+
