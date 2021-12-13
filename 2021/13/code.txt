@@ -1,0 +1,70 @@
+v1 = readlines("test.txt")
+v1a = v1[1:18]
+x1a = [ parse.(Int, x) for x in split.(v1a, ",")]
+v1b = v1[20:end]
+
+v2 = readlines("input.txt")
+v2a = v2[1:974]
+x2a = [ parse.(Int, x) for x in  split.(v2a, ",")]
+v2b = v2[975:end]
+
+# x = x1a 
+x = x2a
+# N = maximum(maximum(x, dims=2)) + 1
+M = maximum([i[1] for i in x]) + 1
+N = maximum([i[2] for i in x]) + 1
+
+Z = zeros(Int, N, M);
+
+for X in x
+  Z[X[2]+1, X[1]+1] = 1
+end
+
+function foldY(Z, y)
+  N,M = size(Z)
+  n = Int(max(y, floor((N-1)/2)))
+  Z2 = zeros(Int, n, M)
+  for i in 1:n
+    for j in 1:M
+      Z2[i,j] = Z[i,j] + Z[N-(i-1), j]
+    end
+  end
+  Z2
+end
+
+function foldX(Z, x)
+  N, M = size(Z)
+  m = Int(max(x, floor((M-1)/2)))
+  Z2 = zeros(Int, N, m)
+  for i in 1:N
+    for j in 1:m
+      Z2[i,j] = Z[i,j] + Z[i, M-(j-1)]
+    end
+  end
+  Z2
+end
+
+# testing
+## Z2 = foldY(Z, 7)
+# count dots
+## sum(Z2 .> 0)
+## Z3 = foldX(Z2, 5)
+
+# input data
+Z2 = foldX(Z, 655)
+sum(Z2 .> 0)
+
+Z2 = foldY(Z2, 447)
+Z2 = foldX(Z2, 327)
+Z2 = foldY(Z2, 223)
+Z2 = foldX(Z2, 163)
+Z2 = foldY(Z2, 111)
+Z2 = foldX(Z2, 81)
+Z2 = foldY(Z2, 55)
+Z2 = foldX(Z2, 40)
+Z2 = foldY(Z2, 27)
+Z2 = foldY(Z2, 13)
+Z2 = foldY(Z2, 6)
+
+# LRGPRECB
+
